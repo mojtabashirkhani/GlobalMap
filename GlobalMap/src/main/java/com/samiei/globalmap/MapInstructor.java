@@ -30,13 +30,13 @@ public abstract class MapInstructor  {
 
     protected abstract void drawCirclePolygon(CirclePolygonModel circlePolygonModel);
 
-    protected abstract boolean removeExistingFeatures(String groupKey);
+    public abstract boolean removeExistingFeatures(String groupKey);
 
     protected abstract void drawLinePolygon(MapLineModel mapLineModel);
 
     protected abstract void addGroupLocationLayer(ArrayList<MapObjectModel> mapObjectModels, String group);
 
-    protected abstract void addSingleLocationLayer(MapObjectModel mapObjectModel);
+    public abstract void addSingleLocationLayer(MapObjectModel mapObjectModel);
 
     protected abstract void drawSellPolygon(ArrayList<PolygonModel> polygonModel);
 
@@ -46,9 +46,9 @@ public abstract class MapInstructor  {
 
     protected abstract void moveCameraToSpecificPosition(LatLng latLng);
 
-    protected abstract void zoomCameraToSpecificPosition(GeoPoint geoPoint,int zoomScale);
+    public abstract void zoomCameraToSpecificPosition(GeoPoint geoPoint,int zoomScale);
 
-    protected abstract void onMapContentClickListener(String groupMarkerId, IMapClickEvents IMapClickEvents);
+    public abstract void onMapContentClickListener(String groupMarkerId, IMapClickEvents IMapClickEvents);
 
     protected abstract void removeAllAvailableFeaturesOnMap();
 
