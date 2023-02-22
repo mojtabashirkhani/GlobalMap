@@ -4,8 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
-import com.example.bottomsheet.model.BaseBottomSheetRecyclerModel;
-import com.example.bottomsheet.model.LocationModel;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.samiei.globalmap.Api.APIServiceMapIr;
@@ -23,12 +21,9 @@ import com.samiei.globalmap.Responses.MapIr.OptimizedResponse.Step;
 import com.samiei.globalmap.ResultInterface.IResponse;
 import com.samiei.globalmap.Utils.RoutingUtils;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -310,14 +305,18 @@ public class MapIrService {
 
                         if (result != null) {
 
-                            io.reactivex.Observable.fromIterable(result.getValue())
+                            ArrayList arrayList = new ArrayList();
+                            arrayList.add(result.getValue());
+
+                            iResponse.onSuccess(arrayList);
+                           /* io.reactivex.Observable.fromIterable(result.getValue())
                                     .subscribeOn(Schedulers.computation())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .map(value -> value.getAddress())
                                     .distinct()
                                     .map(address -> new LocationModel((String) address, "address"))
                                     .toList()
-                                    .subscribe(list -> iResponse.onSuccess((ArrayList<? extends BaseBottomSheetRecyclerModel>) list));
+                                    .subscribe(list -> iResponse.onSuccess((ArrayList<? extends BaseBottomSheetRecyclerModel>) list));*/
 
                         }
                     } else {
@@ -364,14 +363,19 @@ public class MapIrService {
 
                         if (result != null) {
 
-                            io.reactivex.Observable.fromIterable(result.getValue())
+                            ArrayList arrayList = new ArrayList();
+                            arrayList.add(result.getValue());
+
+                            iResponse.onSuccess(arrayList);
+
+                          /*  io.reactivex.Observable.fromIterable(result.getValue())
                                     .subscribeOn(Schedulers.computation())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .map(value -> value.getAddress())
                                     .distinct()
                                     .map(address -> new LocationModel((String) address, "address"))
                                     .toList()
-                                    .subscribe(list -> iResponse.onSuccess((ArrayList<? extends BaseBottomSheetRecyclerModel>) list));
+                                    .subscribe(list -> iResponse.onSuccess((ArrayList<? extends BaseBottomSheetRecyclerModel>) list));*/
 
                         }
                     } else {

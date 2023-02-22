@@ -19,6 +19,7 @@ import com.example.bottomsheet.abstractions.IApplyButton;
 import com.example.bottomsheet.abstractions.ICancelButton;
 import com.example.bottomsheet.abstractions.IDynamicList;
 import com.example.bottomsheet.abstractions.ISearch;
+import com.example.bottomsheet.model.LocationModel;
 import com.example.bottomsheet.searchWatcher.SearchWatcher;
 import com.example.bottomsheet.searchWatcher.Watcher;
 import com.google.android.gms.maps.model.LatLng;
@@ -28,13 +29,17 @@ import com.samiei.globalmap.MapInstructor;
 import com.samiei.globalmap.MapServices.MapIrService;
 import com.samiei.globalmap.Models.MapObjectModel;
 import com.samiei.globalmap.Models.search.Geom;
+import com.samiei.globalmap.Models.search.Value;
 import com.samiei.globalmap.ResultInterface.IResponse;
 
 import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends ViewBinding, M extends MapObjectModel, I extends MapInstructor> extends BaseBottomSheetMapView<V, M, I> implements ISearch, IApplyButton, ICancelButton, IDynamicList, AdapterItemListener<T> {
 
@@ -190,7 +195,15 @@ public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends Vi
                             @Override
                             public void onSuccess(ArrayList arrayListData) {
 
-                                filteredListBaseSearchModel.addAll(arrayListData);
+                                io.reactivex.Observable.fromIterable((ArrayList<Value>)arrayListData)
+                                        .subscribeOn(Schedulers.computation())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .map(value -> value.getAddress())
+                                        .distinct()
+                                        .map(address -> new LocationModel((String) address, "address"))
+                                        .toList()
+                                        .subscribe(list -> filteredListBaseSearchModel.addAll((Collection<? extends T>) list));
+//                                filteredListBaseSearchModel.addAll(arrayListData);
 
                                 initListAdapter();
 
