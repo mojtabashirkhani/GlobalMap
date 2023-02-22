@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.bottomsheet.BaseBottomSheetRecyclerModel;
+import com.example.bottomsheet.model.BaseBottomSheetRecyclerModel;
 import com.example.bottomsheet.databinding.ItemBaseSearchBinding;
 
 import java.util.ArrayList;

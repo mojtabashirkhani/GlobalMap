@@ -11,7 +11,7 @@ import androidx.viewbinding.ViewBinding;
 import com.example.bottomsheet.AdapterUtil.AdapterAction;
 import com.example.bottomsheet.AdapterUtil.AdapterItemMultiSelectListener;
 import com.example.bottomsheet.AdapterUtil.BottomSheetRecyclerAdapter;
-import com.example.bottomsheet.BaseBottomSheetRecyclerModel;
+import com.example.bottomsheet.model.BaseBottomSheetRecyclerModel;
 import com.example.bottomsheet.abstractions.IApplyButton;
 import com.example.bottomsheet.abstractions.IStaticList;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;

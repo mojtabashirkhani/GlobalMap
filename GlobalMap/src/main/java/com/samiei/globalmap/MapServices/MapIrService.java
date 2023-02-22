@@ -1,8 +1,11 @@
 package com.samiei.globalmap.MapServices;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.bottomsheet.model.BaseBottomSheetRecyclerModel;
+import com.example.bottomsheet.model.LocationModel;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.samiei.globalmap.Api.APIServiceMapIr;
@@ -13,6 +16,7 @@ import com.samiei.globalmap.Enums.NavigationType;
 import com.samiei.globalmap.Models.Direction.MapDirectionModel;
 import com.samiei.globalmap.Models.Direction.MapMoveModel;
 import com.samiei.globalmap.Models.Matrix.MatrixParam;
+import com.samiei.globalmap.Models.search.SearchMapIrResponseModel;
 import com.samiei.globalmap.Responses.MapIr.Matrix.MatrixSuccessResponse;
 import com.samiei.globalmap.Responses.MapIr.OptimizedResponse.OptimizedRouteResult;
 import com.samiei.globalmap.Responses.MapIr.OptimizedResponse.Step;
@@ -23,6 +27,8 @@ import com.samiei.globalmap.Utils.RoutingUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -33,13 +39,14 @@ public class MapIrService {
 
     Context context;
     String mapKey;
-    public MapIrService(Context context,String mapKey) {
+
+    public MapIrService(Context context, String mapKey) {
         this.context = context;
         this.mapKey = mapKey;
         Log.i("injection", "MapIrService: ");
     }
 
-    private Call checkNavigationType(NavigationType navigationType, String latLngsString, boolean showAlternatives , boolean showSteps){
+    private Call checkNavigationType(NavigationType navigationType, String latLngsString, boolean showAlternatives, boolean showSteps) {
         APIServiceMapIr apiServiceMapIr = ApiClientGlobal.getInstance().getClientServiceMapIr(mapKey);
 
         Call<OptimizedRouteResult> call;
@@ -68,65 +75,61 @@ public class MapIrService {
         }
         return call;
     }
-    public void getNavigationRoute(String routeId,NavigationType navigationType, LatLng[] latLngs, boolean showAlternatives, boolean showSteps, IResponse retrofitResponse) {
+
+    public void getNavigationRoute(String routeId, NavigationType navigationType, LatLng[] latLngs, boolean showAlternatives, boolean showSteps, IResponse retrofitResponse) {
 
         String latLngString = convertArrayToApiString(latLngs);
 
-        if (latLngString.length()>0)
-        {
+        if (latLngString.length() > 0) {
             Call<OptimizedRouteResult> call = checkNavigationType(navigationType, latLngString, showAlternatives, showSteps);
-            if (call != null)
-            {
+            if (call != null) {
                 call.enqueue(new Callback<OptimizedRouteResult>() {
                     @Override
                     public void onResponse(Call<OptimizedRouteResult> call, Response<OptimizedRouteResult> response) {
                         Log.i("responseCode", "onResponse: " + response.body().getCode());
                         Log.i("responseBody", "onResponse: " + response.body());
                         Log.i("fetchRout", "onResponse");
-                        if (response.raw().body() != null)
-                        {
+                        if (response.raw().body() != null) {
                             long contentLength = response.raw().body().contentLength();
                         }
                         try {
                             if (response.isSuccessful()) {
                                 OptimizedRouteResult result = response.body();
                                 if (result != null) {
-                                    Log.i("fetchRout", "result not null"+result.getCode());
+                                    Log.i("fetchRout", "result not null" + result.getCode());
                                     ArrayList<MapMoveModel> mapMoveModels = new ArrayList<>();
                                     for (Step step : result.getRoutes()[0].getLegs()[0].getSteps()) {
                                         //guidance
                                         int modifier = RoutingUtils.identifyModifierForDrawable(step.getManeuver().getModifier() + step.getManeuver().getType());
-                                        String guidanceSigns ="drawable/ic_route_type_" + modifier;
+                                        String guidanceSigns = "drawable/ic_route_type_" + modifier;
 
                                         //instruction
                                         String instruction = step.getName();
                                         String instructionExtension = RoutingUtils.identifyModifierForInstruction(step.getManeuver().getModifier() + step.getManeuver().getType());
 
-                                        if (step.getDistance() != null)
-                                        {
-                                            instruction += "\n" + instructionExtension ;
+                                        if (step.getDistance() != null) {
+                                            instruction += "\n" + instructionExtension;
                                         }
 
-                                        if (step.getDistance()!= 0.0d)
-                                        {
-                                            instruction += "\n"+ "distance:"+" "+ step.getDistance() + "meter";
+                                        if (step.getDistance() != 0.0d) {
+                                            instruction += "\n" + "distance:" + " " + step.getDistance() + "meter";
                                         }
-                                        List<LatLng> hashRoadSection = RoutingUtils.decodeToLatLng(step.getGeometry(),false, MapType.MapIR);
-                                        MapMoveModel mapMoveModel = new MapMoveModel(step.getDistance() , step.getDuration() , guidanceSigns , instruction , hashRoadSection);
+                                        List<LatLng> hashRoadSection = RoutingUtils.decodeToLatLng(step.getGeometry(), false, MapType.MapIR);
+                                        MapMoveModel mapMoveModel = new MapMoveModel(step.getDistance(), step.getDuration(), guidanceSigns, instruction, hashRoadSection);
                                         mapMoveModels.add(mapMoveModel);
                                     }
 
                                     MapDirectionModel mapDirectionModel = new MapDirectionModel.Builder()
                                             .setRouteId(routeId)
                                             .setHashRoad(result.getRoutes()[0].getGeometry())
-                                            .setStartingPoint(new LatLng( result.getWayPoints()[0].getLocation()[1] , result.getWayPoints()[0].getLocation()[0]))
-                                            .setEndingPoint(new LatLng( result.getWayPoints()[1].getLocation()[1] , result.getWayPoints()[1].getLocation()[0]))
+                                            .setStartingPoint(new LatLng(result.getWayPoints()[0].getLocation()[1], result.getWayPoints()[0].getLocation()[0]))
+                                            .setEndingPoint(new LatLng(result.getWayPoints()[1].getLocation()[1], result.getWayPoints()[1].getLocation()[0]))
                                             .setOverAllDistance(result.getRoutes()[0].getDistance())
                                             .setOverAllDuration(result.getRoutes()[0].getDuration())
                                             .setMovements(mapMoveModels)
                                             .create();
                                     Gson gson = new Gson();
-                                    String mapDirectionJson=gson.toJson(mapDirectionModel);
+                                    String mapDirectionJson = gson.toJson(mapDirectionModel);
                                     ArrayList arrayList = new ArrayList();
                                     arrayList.add(mapDirectionJson);
                                     retrofitResponse.onSuccess(arrayList);
@@ -161,11 +164,10 @@ public class MapIrService {
                 Log.i("fetchRout", "onFailure: ");
                 retrofitResponse.onFailed(Constants.HTTP_EXCEPTION, "invalidMap");
             }
-        }
-        else{
+        } else {
             Log.i("fetchRout", "onFailure: ");
 
-            retrofitResponse.onFailed(Constants.HTTP_EXCEPTION,"error getData routing");
+            retrofitResponse.onFailed(Constants.HTTP_EXCEPTION, "error getData routing");
         }
     }
 
@@ -180,14 +182,226 @@ public class MapIrService {
         return endpoint;
     }
 
-    public void getMatrixDistance(MatrixParam[] startingPoints, MatrixParam[] destinationPoints, boolean sort, String ACTIVITY_NAME, IResponse iResponse)
-    {
+    public void getLocationFromAddress(String text, String select, IResponse iResponse) {
+
+        APIServiceMapIr apiServiceMapIr = ApiClientGlobal.getInstance().getClientServiceMapIr(Constants.MAP_IR_KEY);
+
+        Call<SearchMapIrResponseModel> call = apiServiceMapIr.getLocationFromAddress(text, select);
+
+        String endpoint = getEndpoint(call);
+
+        call.enqueue(new Callback<SearchMapIrResponseModel>() {
+            @Override
+            public void onResponse(Call<SearchMapIrResponseModel> call, Response<SearchMapIrResponseModel> response) {
+                Log.i("responseBody", "onResponse: " + response.body());
+
+                Log.i("getLocationFromAddress", "onResponse");
+                if (response.raw().body() != null) {
+                    long contentLength = response.raw().body().contentLength();
+                }
+                try {
+                    if (response.isSuccessful()) {
+                        SearchMapIrResponseModel result = response.body();
+
+                        if (result != null) {
+
+                            ArrayList arrayList = new ArrayList();
+                            arrayList.add(result.getValue().get(0).getGeom());
+
+                            iResponse.onSuccess(arrayList);
+
+                        } else {
+                            Log.i("getLocationFromAddress", "result not null " + result);
+
+                            iResponse.onFailed(Constants.HTTP_NULL_RESPONSE, "result is null");
+                        }
+                    } else {
+
+                        String message = String.format("error body : %1$s , code : %2$s * %3$s", response.message(), response.code(), endpoint);
+                        iResponse.onFailed(Constants.HTTP_ERROR, message);
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                    iResponse.onFailed(Constants.HTTP_EXCEPTION, exception.toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SearchMapIrResponseModel> call, Throwable t) {
+                Log.i("getLocationFromAddress", "onFailure: ");
+                iResponse.onFailed(Constants.HTTP_EXCEPTION, t.getMessage());
+            }
+        });
+    }
+
+    public void getLocationFromAddress(String text, String select, String filter, IResponse iResponse) {
+        APIServiceMapIr apiServiceMapIr = ApiClientGlobal.getInstance().getClientServiceMapIr(Constants.MAP_IR_KEY);
+
+        Call<SearchMapIrResponseModel> call = apiServiceMapIr.getLocationFromAddress(text, select, filter);
+
+        String endpoint = getEndpoint(call);
+
+        call.enqueue(new Callback<SearchMapIrResponseModel>() {
+            @Override
+            public void onResponse(Call<SearchMapIrResponseModel> call, Response<SearchMapIrResponseModel> response) {
+                Log.i("responseBody", "onResponse: " + response.body());
+
+                Log.i("getLocationFromAddress", "onResponse");
+                if (response.raw().body() != null) {
+                    long contentLength = response.raw().body().contentLength();
+                }
+                try {
+                    if (response.isSuccessful()) {
+                        SearchMapIrResponseModel result = response.body();
+
+                        if (result != null) {
+
+                            ArrayList arrayList = new ArrayList();
+                            arrayList.add(result.getValue().get(0).getGeom());
+
+                            iResponse.onSuccess(arrayList);
+
+                        } else {
+                            Log.i("getLocationFromAddress", "result not null " + result);
+
+                            iResponse.onFailed(Constants.HTTP_NULL_RESPONSE, "result is null");
+                        }
+                    } else {
+
+                        String message = String.format("error body : %1$s , code : %2$s * %3$s", response.message(), response.code(), endpoint);
+                        iResponse.onFailed(Constants.HTTP_ERROR, message);
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                    iResponse.onFailed(Constants.HTTP_EXCEPTION, exception.toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SearchMapIrResponseModel> call, Throwable t) {
+                Log.i("getLocationFromAddress", "onFailure: ");
+                iResponse.onFailed(Constants.HTTP_EXCEPTION, t.getMessage());
+            }
+        });
+
+    }
+
+    public void getAutoCompleteSearchResult(String text, String select, IResponse iResponse) {
+
+        APIServiceMapIr apiServiceMapIr = ApiClientGlobal.getInstance().getClientServiceMapIr(Constants.MAP_IR_KEY);
+
+        Call<SearchMapIrResponseModel> call = apiServiceMapIr.getAutoCompleteSearchResults(text, select);
+
+        String endpoint = getEndpoint(call);
+
+        call.enqueue(new Callback<SearchMapIrResponseModel>() {
+            @SuppressLint("LongLogTag")
+            @Override
+            public void onResponse(Call<SearchMapIrResponseModel> call, Response<SearchMapIrResponseModel> response) {
+                Log.i("responseBody", "onResponse: " + response.body());
+
+                Log.i("getAutoCompleteSearchResult", "onResponse");
+                if (response.raw().body() != null) {
+                    long contentLength = response.raw().body().contentLength();
+                }
+                try {
+                    if (response.isSuccessful()) {
+                        SearchMapIrResponseModel result = response.body();
+
+                        if (result != null) {
+
+                            io.reactivex.Observable.fromIterable(result.getValue())
+                                    .subscribeOn(Schedulers.computation())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .map(value -> value.getAddress())
+                                    .distinct()
+                                    .map(address -> new LocationModel((String) address, "address"))
+                                    .toList()
+                                    .subscribe(list -> iResponse.onSuccess((ArrayList<? extends BaseBottomSheetRecyclerModel>) list));
+
+                        }
+                    } else {
+
+                        String message = String.format("error body : %1$s , code : %2$s * %3$s", response.message(), response.code(), endpoint);
+                        iResponse.onFailed(Constants.HTTP_ERROR, message);
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                    iResponse.onFailed(Constants.HTTP_EXCEPTION, exception.toString());
+                }
+            }
+
+            @SuppressLint("LongLogTag")
+            @Override
+            public void onFailure(Call<SearchMapIrResponseModel> call, Throwable t) {
+                Log.i("getAutoCompleteSearchResult", "onFailure: ");
+                iResponse.onFailed(Constants.HTTP_EXCEPTION, t.getMessage());
+            }
+        });
+    }
+
+
+    public void getAutoCompleteSearchResult(String text, String select, String filter, IResponse iResponse) {
+
+        APIServiceMapIr apiServiceMapIr = ApiClientGlobal.getInstance().getClientServiceMapIr(Constants.MAP_IR_KEY);
+
+        Call<SearchMapIrResponseModel> call = apiServiceMapIr.getAutoCompleteSearchResults(text, select, filter);
+
+        String endpoint = getEndpoint(call);
+        call.enqueue(new Callback<SearchMapIrResponseModel>() {
+            @SuppressLint("LongLogTag")
+            @Override
+            public void onResponse(Call<SearchMapIrResponseModel> call, Response<SearchMapIrResponseModel> response) {
+                Log.i("responseBody", "onResponse: " + response.body());
+
+                Log.i("getAutoCompleteSearchResult", "onResponse");
+                if (response.raw().body() != null) {
+                    long contentLength = response.raw().body().contentLength();
+                }
+                try {
+                    if (response.isSuccessful()) {
+                        SearchMapIrResponseModel result = response.body();
+
+                        if (result != null) {
+
+                            io.reactivex.Observable.fromIterable(result.getValue())
+                                    .subscribeOn(Schedulers.computation())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .map(value -> value.getAddress())
+                                    .distinct()
+                                    .map(address -> new LocationModel((String) address, "address"))
+                                    .toList()
+                                    .subscribe(list -> iResponse.onSuccess((ArrayList<? extends BaseBottomSheetRecyclerModel>) list));
+
+                        }
+                    } else {
+
+                        String message = String.format("error body : %1$s , code : %2$s * %3$s", response.message(), response.code(), endpoint);
+                        iResponse.onFailed(Constants.HTTP_ERROR, message);
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                    iResponse.onFailed(Constants.HTTP_EXCEPTION, exception.toString());
+                }
+            }
+
+            @SuppressLint("LongLogTag")
+            @Override
+            public void onFailure(Call<SearchMapIrResponseModel> call, Throwable t) {
+                Log.i("getAutoCompleteSearchResult", "onFailure: ");
+                iResponse.onFailed(Constants.HTTP_EXCEPTION, t.getMessage());
+            }
+        });
+
+    }
+
+    public void getMatrixDistance(MatrixParam[] startingPoints, MatrixParam[] destinationPoints, boolean sort, String ACTIVITY_NAME, IResponse iResponse) {
         String startingString = convertToApiMatrixFormat(startingPoints);
         String destinationString = convertToApiMatrixFormat(destinationPoints);
 
         APIServiceMapIr apiServiceMapIr = ApiClientGlobal.getInstance().getClientServiceMapIr(mapKey);
 
-        Call<MatrixSuccessResponse> call = apiServiceMapIr.getMatrixDistance(startingString,destinationString,sort);
+        Call<MatrixSuccessResponse> call = apiServiceMapIr.getMatrixDistance(startingString, destinationString, sort);
 
         String endpoint = getEndpoint(call);
         call.enqueue(new Callback<MatrixSuccessResponse>() {
@@ -196,8 +410,7 @@ public class MapIrService {
                 Log.i("responseBody", "onResponse: " + response.body());
 
                 Log.i("fetchRoute", "onResponse");
-                if (response.raw().body() != null)
-                {
+                if (response.raw().body() != null) {
                     long contentLength = response.raw().body().contentLength();
                 }
                 try {
@@ -236,20 +449,20 @@ public class MapIrService {
         });
 
     }
-    private String convertToApiMatrixFormat(MatrixParam[] matrixParams)
-    {
+
+    private String convertToApiMatrixFormat(MatrixParam[] matrixParams) {
         String matrixParamString = "";
-        for (int i = 0; i < matrixParams.length; i++)
-        {
+        for (int i = 0; i < matrixParams.length; i++) {
             if (i < matrixParams.length - 1)
                 matrixParamString += matrixParams[i].getId() + "," + matrixParams[i].getLatLngs().latitude + "," + matrixParams[i].getLatLngs().longitude + "|";
             else
-                matrixParamString += matrixParams[i].getId() + "," + matrixParams[i].getLatLngs().latitude + "," + matrixParams[i].getLatLngs().longitude ;
+                matrixParamString += matrixParams[i].getId() + "," + matrixParams[i].getLatLngs().latitude + "," + matrixParams[i].getLatLngs().longitude;
 
         }
         return matrixParamString;
 
     }
+
     private String convertArrayToApiString(LatLng[] latLngs) {
 
         String latLngString = "";
@@ -257,9 +470,9 @@ public class MapIrService {
         if (latLngs.length > 0) {
             for (int i = 0; i < latLngs.length; i++) {
                 if (i != latLngs.length - 1)
-                    latLngString +=  latLngs[i].longitude +"%2C"+ latLngs[i].latitude+"%3B" ;
+                    latLngString += latLngs[i].longitude + "%2C" + latLngs[i].latitude + "%3B";
                 else
-                    latLngString += latLngs[i].longitude  +"%2C" + latLngs[i].latitude;
+                    latLngString += latLngs[i].longitude + "%2C" + latLngs[i].latitude;
             }
         }
         return latLngString;

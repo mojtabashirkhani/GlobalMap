@@ -2,11 +2,15 @@ package com.samiei.globalmap.Api;
 
 
 
+import com.samiei.globalmap.Constants;
+import com.samiei.globalmap.Models.search.SearchMapIrResponseModel;
 import com.samiei.globalmap.Responses.MapIr.Matrix.MatrixSuccessResponse;
 import com.samiei.globalmap.Responses.MapIr.OptimizedResponse.OptimizedRouteResult;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -42,6 +46,31 @@ public interface APIServiceMapIr {
                                                        @Query("alternatives") boolean alternatives,
                                                        @Query("steps") boolean steps);
 
+
+    @Headers({"Content-Type: application/json", "x-api-key:" + Constants.MAP_IR_KEY})
+    @POST("search/v2/autocomplete")
+    Call<SearchMapIrResponseModel> getAutoCompleteSearchResults(
+            @Query("text") String text, @Query("$select") String select
+    );
+
+    @Headers({"Content-Type: application/json", "x-api-key:" + Constants.MAP_IR_KEY})
+    @POST("search/v2/autocomplete")
+    Call<SearchMapIrResponseModel> getAutoCompleteSearchResults(
+            @Query("text") String text, @Query("$select") String select, @Query("$filter") String filter
+    );
+
+
+    @Headers({"Content-Type: application/json", "x-api-key:" + Constants.MAP_IR_KEY})
+    @POST("search/v2")
+    Call<SearchMapIrResponseModel> getLocationFromAddress(
+            @Query("text") String text, @Query("$select") String select
+    );
+
+    @Headers({"Content-Type: application/json", "x-api-key:" + Constants.MAP_IR_KEY})
+    @POST("search/v2")
+    Call<SearchMapIrResponseModel> getLocationFromAddress(
+            @Query("text") String text, @Query("$select") String select, @Query("$filter") String filter
+    );
 
 
 

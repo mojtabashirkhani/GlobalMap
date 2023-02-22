@@ -14,7 +14,7 @@ import androidx.viewbinding.ViewBinding;
 import com.example.bottomsheet.AdapterUtil.AdapterAction;
 import com.example.bottomsheet.AdapterUtil.AdapterItemListener;
 import com.example.bottomsheet.AdapterUtil.asyncSearchAdapter.AsyncSearchListAdapter;
-import com.example.bottomsheet.BaseBottomSheetRecyclerModel;
+import com.example.bottomsheet.model.BaseBottomSheetRecyclerModel;
 import com.example.bottomsheet.abstractions.IApplyButton;
 import com.example.bottomsheet.abstractions.ICancelButton;
 import com.example.bottomsheet.abstractions.IDynamicList;
@@ -27,6 +27,7 @@ import com.samiei.globalmap.MapDesigns.OsmDroid;
 import com.samiei.globalmap.MapInstructor;
 import com.samiei.globalmap.MapServices.MapIrService;
 import com.samiei.globalmap.Models.MapObjectModel;
+import com.samiei.globalmap.Models.search.Geom;
 import com.samiei.globalmap.ResultInterface.IResponse;
 
 import org.osmdroid.util.GeoPoint;
@@ -34,7 +35,6 @@ import org.osmdroid.util.GeoPoint;
 import java.util.ArrayList;
 
 import io.reactivex.Observable;
-import ir.map.servicesdk.model.inner.Geom;
 
 public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends ViewBinding, M extends MapObjectModel, I extends MapInstructor> extends BaseBottomSheetMapView<V, M, I> implements ISearch, IApplyButton, ICancelButton, IDynamicList, AdapterItemListener<T> {
 
@@ -149,17 +149,17 @@ public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends Vi
     @Override
     protected void initSearchView(Context context, SearchWatcher searchView, String searchHint, ImageView closeBtn, ImageView searchIcon, EditText searchEditText) {
         super.initSearchView(context, searchView, searchHint, closeBtn, searchIcon, searchEditText);
-        /*searchView.addTextWatcher(new Watcher() {
+        searchView.addTextWatcher(new Watcher() {
             @Override
             public void onTextChange(String s) {
                 filteredListBaseSearchModel.clear();
                 addressList.clear();
                 recyclerView.setVisibility(View.VISIBLE);
                 mapView.setVisibility(View.INVISIBLE);
-               *//* shimmerFrameLayout.setVisibility(View.VISIBLE);
+               /* shimmerFrameLayout.setVisibility(View.VISIBLE);
 
                 shimmerLoading.startLoading(new ShimmerFrameLayout[]{shimmerFrameLayout}
-                , new View[]{recyclerView});*//*
+                , new View[]{recyclerView});*/
 
                 if (!s.trim().isEmpty()) {
 
@@ -173,15 +173,15 @@ public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends Vi
 
                                 initListAdapter();
 
-                               *//* shimmerLoading.stopLoading();
-                                shimmerFrameLayout.setVisibility(View.GONE);*//*
+                                /*shimmerLoading.stopLoading();
+                                shimmerFrameLayout.setVisibility(View.GONE);*/
 
                             }
 
                             @Override
                             public void onFailed(String type, String error) {
-                              *//*  shimmerLoading.stopLoading();
-                                shimmerFrameLayout.setVisibility(View.GONE);*//*
+                                /*shimmerLoading.stopLoading();
+                                shimmerFrameLayout.setVisibility(View.GONE);*/
 
                             }
                         });
@@ -194,14 +194,15 @@ public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends Vi
 
                                 initListAdapter();
 
-                             *//*   shimmerLoading.stopLoading();
-                                shimmerFrameLayout.setVisibility(View.GONE);*//*
+                                /*shimmerLoading.stopLoading();
+                                shimmerFrameLayout.setVisibility(View.GONE);*/
                             }
 
                             @Override
                             public void onFailed(String type, String error) {
-                                *//*shimmerLoading.stopLoading();
-                                shimmerFrameLayout.setVisibility(View.GONE);*//*
+                                //TODO handle error
+                                /*shimmerLoading.stopLoading();
+                                shimmerFrameLayout.setVisibility(View.GONE);*/
 
                             }
                         });
@@ -211,15 +212,15 @@ public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends Vi
                 } else {
                     initListAdapter();
 
-                    *//*shimmerLoading.stopLoading();
-                    shimmerFrameLayout.setVisibility(View.GONE);*//*
+                    /*shimmerLoading.stopLoading();
+                    shimmerFrameLayout.setVisibility(View.GONE);*/
 
                     if (mapView.getVisibility() == View.INVISIBLE)
                     mapView.setVisibility(View.VISIBLE);
 
                 }
             }
-        }, 1000);*/
+        }, 1000);
     }
 
     @Override
@@ -240,7 +241,6 @@ public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends Vi
 
     @Override
     public void onClickApplyButton() {
-        //TODO hold lat lng
         btnApply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -284,7 +284,7 @@ public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends Vi
     public void onItemSelect(T model, int position, AdapterAction Action) {
         recyclerView.setVisibility(View.INVISIBLE);
 
-     /*   if (!(select.trim().isEmpty()) && (filter.trim().isEmpty())) {
+        if (!(select.trim().isEmpty()) && (filter.trim().isEmpty())) {
 
             mapIrService.getLocationFromAddress(model.getName(), select, new IResponse() {
                 @Override
@@ -338,7 +338,7 @@ public class BottomSheetMap<T extends BaseBottomSheetRecyclerModel, V extends Vi
                 }
             });
 
-        }*/
+        }
 
     }
 

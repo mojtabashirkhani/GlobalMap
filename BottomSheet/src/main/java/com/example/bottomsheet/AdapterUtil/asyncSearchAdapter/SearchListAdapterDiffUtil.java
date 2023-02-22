@@ -3,7 +3,7 @@ package com.example.bottomsheet.AdapterUtil.asyncSearchAdapter;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
-import com.example.bottomsheet.BaseBottomSheetRecyclerModel;
+import com.example.bottomsheet.model.BaseBottomSheetRecyclerModel;
 
 import java.util.Objects;
 

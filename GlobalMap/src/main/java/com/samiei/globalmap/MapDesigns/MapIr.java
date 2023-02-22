@@ -526,9 +526,15 @@ public class MapIr extends MapInstructor {
     public LatLng convertGeoPointToLatLng(GeoPoint geoPoint) {
         double lat = geoPoint.getLatitude();
         double lng = geoPoint.getLongitude();
-        LatLng latLng = new LatLng(lat, lng);
-        return latLng;
+        return new LatLng(lat, lng);
 
+    }
+
+    @Override
+    public GeoPoint convertLatLngToGeoPoint(LatLng latLng) {
+        double lat = latLng.latitude;
+        double lng = latLng.longitude;
+        return new GeoPoint(lat, lng);
     }
 
 

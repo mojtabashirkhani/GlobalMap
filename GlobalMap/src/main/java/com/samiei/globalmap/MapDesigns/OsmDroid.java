@@ -313,6 +313,13 @@ public class OsmDroid extends MapInstructor {
     }
 
     @Override
+    public GeoPoint convertLatLngToGeoPoint(LatLng latLng) {
+        double lat = latLng.latitude;
+        double lng = latLng.longitude;
+        return new GeoPoint(lat, lng);
+    }
+
+    @Override
     public void moveCameraToSpecificPosition(LatLng latLng) {
 
         IMapController mapController = new MapController(this.mapView);

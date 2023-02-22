@@ -43,6 +43,7 @@ public abstract class MapInstructor  {
     protected abstract void setStartLocation(MapObjectModel mapObjectModel);
 
     protected abstract LatLng convertGeoPointToLatLng(GeoPoint geoPoint);
+    public abstract GeoPoint convertLatLngToGeoPoint(LatLng latLng);
 
     protected abstract void moveCameraToSpecificPosition(LatLng latLng);
 
